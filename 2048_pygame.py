@@ -2,7 +2,7 @@ import numpy as np
 import pygame
 import random
 
-pygame.init()
+pygame.init() #Initiate pygame
 
 ################## Functions ##############################
 def textObjects(text, font, colour = (0,0,0)):
@@ -11,24 +11,17 @@ def textObjects(text, font, colour = (0,0,0)):
 
 
 def randLocInt(grid):
-	#print(type(grid))
 	grid=np.array(grid)
 	zero_locs = np.argwhere(grid==0 ) #list of points
-	#print('ZEROS', zero_locs)
-	#print('LEN ZERO LIST', len(zero_locs[0]))
 	rand = random.randint(0,len(zero_locs)-1)#random cell in list of zeros
-	#print(rand)
 	grid[zero_locs[rand][0]][zero_locs[rand][1]] = random.choice([2,4])
 	return grid
-	#print(grid)
-	#dfdfdfd
 
 def transposeGrid(grid):
 	return [[grid[i][x] for i in range(0,len(grid))] for x in range(0,len(grid))]
 	
 def adjacencyCheck(my_list):
 	pairs = [[my_list[i],my_list[i+1]] for i in range(0,len(my_list)-1)]
-	#print('pairs', pairs)
 	for p in pairs:
 		if p[0] == p[1]:
 			return True
@@ -44,29 +37,21 @@ def paddZeros(grid, shift, iteration ='first'):
 	padded_grid = []
 	ppadded_grid = []
 	if (shift =='l' or shift =='u'):
-		#print('prePAD', grid)
 		for r in grid:
 			while len(r) < 4:
 				r.append(0)
 			padded_grid.append(r)
-		#print('PAD',padded_grid)
 	elif (shift == 'r' or shift=='d') and iteration == 'first':
 		for r in grid:
-			#print('Prefirst PAD', r)
 			while len(r) < 4:
 				r.insert(0,0)
 			padded_grid.append(r[::-1]) #reversed for processing in calcSum()
-			ppadded_grid.append(r) #unreversed for printing and verification
-		#print('Pad-first',ppadded_grid) 
+			ppadded_grid.append(r) #unreversed for printing and verification 
 	elif (shift == 'r' or shift=='d') and iteration == 'second':
-		#print('PreSecond Pad', grid)
-		#print('HERE',padded_grid)
 		for r in grid:
-			#print('r', r)
 			while len(r) < 4:
 				r.insert(0,0)
 			padded_grid.append(r)
-		#print('PadSecond', padded_grid)
 	return padded_grid
 	
 
@@ -79,27 +64,21 @@ def calcSum(grid, shift, score, iteration = 'first'):
 		recent_sum = False
 		#Do nothing if all full
 		if adjacencyCheck(r) == False and 0 not in r:
-			#print('full row', r)
 			rs.extend(r)
 			full_count+=1
 			if full_count == 4:
-				#GAME OVER FUNCTION
 				print('FAIL')
-				#exit()
 		else:
 			for i in range(0,3):
 				if r[i] == r[i+1] and recent_sum == False:
 					rs.append(r[i]*2)
 					score+= r[i]*2 ##Update global score
-					#cancel_next = True
 					recent_sum = True
 				elif recent_sum == True:
 					rs.append(0)
 					recent_sum = False
-					#cancel_next = False
 				else:
 					rs.append(r[i])
-					#cancel_next = False
 			if len(r)==4 and r[-1] !=0 and recent_sum == False:
 				rs.append(r[-1])
 
@@ -108,7 +87,6 @@ def calcSum(grid, shift, score, iteration = 'first'):
 		elif shift == 'r' or shift == 'd':
 			summed_grid.append(rs[::-1]) #
 
-	#print('SUMMED',summed_grid)
 	return summed_grid, score
 	
 def gameOverCheck(grid):
@@ -118,31 +96,24 @@ def gameOverCheck(grid):
 	print('COMBO',full_combo)
 
 	for r in full_combo:
-		#Trigger end game if all full
-		#print(len(np.argwhere(grid==0 )))
-		if adjacencyCheck(r) == False and len(np.argwhere(grid==0 ))== 0:
-			#print('full row', r)
+		if adjacencyCheck(r) == False and (0 not in r):
 			full_count+=1
 			if full_count == 8:
 				print('FAIL')
+				print('Game over grid', grid)
 				return True
 	return False
 
 def processGrid(grid, shift, score, transposed = False):
-	#print(transposed, shift)
 	orig_grid = grid.copy()
 	# Filter
 	grid = filterZeros(grid)
-
 	# Padd
 	grid = paddZeros(grid, shift)
-
 	##summ
 	grid,score = calcSum(grid, shift, score)
-
 	# Filter again
 	grid = filterZeros(grid)
-
 	# Padd again
 	try:
 		grid = np.array(paddZeros(grid, shift, 'second'))
@@ -186,7 +157,7 @@ score = 0
 
 #Colours
 background_c = (200,200,200)
-title_panel_c = (0,200,200)
+title_panel_c = (0,0,0)
 score_panel_c = (0,100,100)
 grid_outline = (0,0,0)
 empty_cell = (100,100,100)
@@ -202,9 +173,6 @@ filled_cell = {'2': (230, 25, 75),
 				'512': (170,255,195),
 				'1024': (255,215,180),
 				'2048': (250,190,190) }
-
-
-
 
 #Fonts and text
 words = ['2048',
@@ -228,7 +196,6 @@ running = True
 ################# Create initial grid ################
 #Two random start locations
 grid = np.zeros((4,4))
-#print(grid)
 
 #start with two random nos
 grid = randLocInt(grid)
@@ -256,7 +223,6 @@ while running:
 				grid,score = processGrid(grid, 'r',score, False)
 			game_over = gameOverCheck(grid)
 
-	#print(verified)
 	##Draw shapes
 	# Fill background
 	window.fill(background_c)
