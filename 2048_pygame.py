@@ -4,12 +4,19 @@ import random
 
 pygame.init() #Initiate pygame
 
+################## Classes ###################################
+class DisplayText():
+	def __init__(self, words, font_info, co_ord, colour):
+		self.words = words
+		self.font_info = font_info
+		self. co_ord = co_ord
+		self.colour = colour
+
+	def genTextObject(self):
+		textSurface = self.font_info.render(self.words, True, self.colour)
+		return textSurface, textSurface.get_rect()
+
 ################## Functions ##############################
-def textObjects(text, font, colour = (0,0,0)):
-	textSurface = font.render(text, True, colour)
-	return textSurface, textSurface.get_rect()
-
-
 def randLocInt(grid):
 	grid=np.array(grid)
 	zero_locs = np.argwhere(grid==0 ) #list of points
@@ -156,42 +163,47 @@ global score
 score = 0
 
 #Colours
-background_c = (200,200,200)
-title_panel_c = (0,0,0)
-score_panel_c = (0,100,100)
-grid_outline = (0,0,0)
-empty_cell = (100,100,100)
-#filled_cell = (50,50,230)
-filled_cell = {'2': (230, 25, 75),
-				'4': (60, 180, 75),
-				'8': (0, 130, 200),
-				'16': (245, 130, 48),
-				'32': (145, 30, 180),
-				'64': (70, 240, 240),
-				'128': (240, 50, 230),
-				'256': (210, 245, 60),
-				'512': (170,255,195),
-				'1024': (255,215,180),
-				'2048': (250,190,190) }
+black = (0,0,0)
+grey = (200,200,200)
+dark_grey = (100,100,100)
+red = (255,0,0)
+orange = (204,102,0)
+light_yellow = (204,204,0) 
+light_green = (0,153,0)
+light_blue = (0,255,204) 
+blue = (0,102,204)
+dark_blue = (0,0,153)
+lavender = (102,102,255)
+purple = (102,0,255)
+pink = (255,153,255)
+white =(255,255,255)
+	
+tile_colours ={'2': red,
+				'4': orange,
+				'8': light_yellow,
+				'16': light_green,
+				'32': light_blue,
+				'64': blue,
+				'128': dark_blue,
+				'256': lavender,
+				'512': purple,
+				'1024': pink,
+				'2048': white }
 
 #Fonts and text
-words = ['2048',
-		 'Score:',
-		 str(score)]
-fonts_info = [pygame.font.Font('freesansbold.ttf', 65),
-			  pygame.font.Font('freesansbold.ttf', 30),
-			  pygame.font.Font('freesansbold.ttf', 50)]
-word_center = [(w_height + padding * 1.5 + title_panel_side / 2, padding + title_panel_side / 2),
-			   (w_height + padding * 1.5 + title_panel_side / 2, (padding + (title_panel_side / 2)) *3),
-			   (w_height + padding * 1.5 + title_panel_side / 2 , (padding + (title_panel_side / 2)) *3+ 100)]
+Title = DisplayText('2048', pygame.font.Font('freesansbold.ttf', 65),(w_height + padding * 1.5 + title_panel_side / 2, padding + title_panel_side / 2),white)
+Score_t = DisplayText('Score:', pygame.font.Font('freesansbold.ttf', 30), (w_height + padding * 1.5 + title_panel_side / 2, (padding + (title_panel_side / 2)) *3), black)
+Score_v = DisplayText(str(score),pygame.font.Font('freesansbold.ttf', 50), (w_height + padding * 1.5 + title_panel_side / 2 , (padding + (title_panel_side / 2)) *3+ 100), black)
+Game_over_t = DisplayText('Game Over !', pygame.font.Font('freesansbold.ttf', 50), (w_height + padding * 1.5 + title_panel_side / 2 , (padding + (title_panel_side / 2)) *3 + 175), red)
+Cell_formats = DisplayText(None, pygame.font.Font('freesansbold.ttf', 40), None, black)
 
-game_over_notice = ['Game Over!', pygame.font.Font('freesansbold.ttf', 50), (w_height + padding * 1.5 + title_panel_side / 2 , (padding + (title_panel_side / 2)) *3 + 175), (255,0,0)]
+constant_text_displayed = [Title, Score_t, Score_v]
 
+#Game parameters
 window = pygame.display.set_mode((w_width, w_height))
 pygame.display.set_caption('2048 -- James Version')
-
-cell_font = pygame.font.Font('freesansbold.ttf', 40)
 running = True
+game_over = False
 
 ################# Create initial grid ################
 #Two random start locations
@@ -201,13 +213,19 @@ grid = np.zeros((4,4))
 grid = randLocInt(grid)
 grid = randLocInt(grid)
 
+##Draw shapes
+# Fill background
+window.fill(grey)
+#Main Grid
+pygame.draw.rect(window, black, (padding, padding, total_grid_side, total_grid_side))
+#Title box
+pygame.draw.rect(window, black, (w_height+padding*1.5, padding,title_panel_side,title_panel_side))
 
 ################## Main Loop ##########################
 print(grid)
 while running:
 
 	#Get user input
-	game_over = False
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			running = False
@@ -223,39 +241,32 @@ while running:
 				grid,score = processGrid(grid, 'r',score, False)
 			game_over = gameOverCheck(grid)
 
-	##Draw shapes
-	# Fill background
-	window.fill(background_c)
-	#Main Grid
-	pygame.draw.rect(window, grid_outline, (padding, padding, total_grid_side, total_grid_side))
-	#Title box
-	pygame.draw.rect(window, title_panel_c, (w_height+padding*1.5, padding,title_panel_side,title_panel_side))
-	#Score caption box
-	pygame.draw.rect(window, score_panel_c, (w_height+padding*1.5, 300, title_panel_side,title_panel_side))
-
 	#Draw inactive and active grid
 	for w in range(0,4):
 		for h in range(0,4):
-			pygame.draw.rect(window, empty_cell, (grid_origin + cell_origin_spacing*w, grid_origin + cell_origin_spacing*h, grid_square_side, grid_square_side ) )
+			pygame.draw.rect(window, dark_grey, (grid_origin + cell_origin_spacing*w, grid_origin + cell_origin_spacing*h, grid_square_side, grid_square_side ) )
 			cell = str(int(grid[h][w]))
+			Cell_formats.words = cell
+			Cell_formats.co_ord = ((grid_origin + cell_origin_spacing*w)+grid_square_side/2, (grid_origin + cell_origin_spacing*h)+grid_square_side/2)
 			if cell!='0':
-				pygame.draw.rect(window, filled_cell[cell], (grid_origin + cell_origin_spacing * w, grid_origin + cell_origin_spacing * h, grid_square_side, grid_square_side))
-				TextSurf, TextRect = textObjects(str(int(cell)), cell_font)
-				TextRect.center = ((grid_origin + cell_origin_spacing*w)+grid_square_side/2, (grid_origin + cell_origin_spacing*h)+grid_square_side/2)
+				pygame.draw.rect(window, tile_colours[cell], (grid_origin + cell_origin_spacing * w, grid_origin + cell_origin_spacing * h, grid_square_side, grid_square_side))
+				TextSurf, TextRect = Cell_formats.genTextObject()
+				TextRect.center = Cell_formats.co_ord
 				window.blit(TextSurf, TextRect)
 
 	# Text Update
-	words[2] = str(int(score))
-	for word, font_info, word_loc in zip(words, fonts_info, word_center):
-		TextSurf, TextRect = textObjects(word, font_info)
-		TextRect.center = (word_loc)
+	pygame.draw.rect(window, white, (w_height+padding*1.5, 300, title_panel_side,title_panel_side))
+	Score_v.words = str(int(score))
+	for item in constant_text_displayed:
+		TextSurf, TextRect = item.genTextObject()
+		TextRect.center = item.co_ord
 		window.blit(TextSurf, TextRect)
 
 	if game_over:
 		print('TRIGGEED')
-		pygame.draw.rect(window, title_panel_c, (w_height+padding*1.5, 450, title_panel_side,title_panel_side))
-		TextSurf, TextRect = textObjects(game_over_notice[0],game_over_notice[1], game_over_notice[3])
-		TextRect.center = (game_over_notice[2])
+		pygame.draw.rect(window, black, (w_height+padding*1.5, 450, title_panel_side,title_panel_side))
+		TextSurf, TextRect = Game_over_t.genTextObject()
+		TextRect.center = Game_over_t.co_ord
 		window.blit(TextSurf,TextRect)
 		pygame.display.update()
 		#Give user option to restart
