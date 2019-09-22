@@ -17,6 +17,13 @@ class DisplayText():
 		return textSurface, textSurface.get_rect()
 
 ################## Functions ##############################
+def newGridGen(window):
+	window.fill(grey)
+	grid = np.zeros((4,4))
+	grid = randLocInt(grid)
+	grid = randLocInt(grid)
+	return grid, True, False, 0
+	
 def randLocInt(grid):
 	grid=np.array(grid)
 	zero_locs = np.argwhere(grid==0 ) #list of points
@@ -194,7 +201,7 @@ tile_colours ={'2': red,
 Title = DisplayText('2048', pygame.font.Font('freesansbold.ttf', 65),(w_height + padding * 1.5 + title_panel_side / 2, padding + title_panel_side / 2),white)
 Score_t = DisplayText('Score:', pygame.font.Font('freesansbold.ttf', 30), (w_height + padding * 1.5 + title_panel_side / 2, (padding + (title_panel_side / 2)) *3), black)
 Score_v = DisplayText(str(score),pygame.font.Font('freesansbold.ttf', 50), (w_height + padding * 1.5 + title_panel_side / 2 , (padding + (title_panel_side / 2)) *3+ 100), black)
-Game_over_t = DisplayText('Game Over !', pygame.font.Font('freesansbold.ttf', 50), (w_height + padding * 1.5 + title_panel_side / 2 , (padding + (title_panel_side / 2)) *3 + 175), red)
+Game_over_t = DisplayText('Game Over !', pygame.font.Font('freesansbold.ttf', 50), (w_width / 2 , w_height/2), red)
 Cell_formats = DisplayText(None, pygame.font.Font('freesansbold.ttf', 40), None, black)
 
 constant_text_displayed = [Title, Score_t, Score_v]
@@ -202,21 +209,9 @@ constant_text_displayed = [Title, Score_t, Score_v]
 #Game parameters
 window = pygame.display.set_mode((w_width, w_height))
 pygame.display.set_caption('2048 -- James Version')
-running = True
-game_over = False
+grid, running, game_over, score = newGridGen(window)
 
-################# Create initial grid ################
-#Two random start locations
-grid = np.zeros((4,4))
-
-#start with two random nos
-grid = randLocInt(grid)
-grid = randLocInt(grid)
-
-##Draw shapes
-# Fill background
-window.fill(grey)
-#Main Grid
+#Draw Main Grid
 pygame.draw.rect(window, black, (padding, padding, total_grid_side, total_grid_side))
 #Title box
 pygame.draw.rect(window, black, (w_height+padding*1.5, padding,title_panel_side,title_panel_side))
@@ -224,7 +219,6 @@ pygame.draw.rect(window, black, (w_height+padding*1.5, padding,title_panel_side,
 ################## Main Loop ##########################
 print(grid)
 while running:
-
 	#Get user input
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -255,6 +249,7 @@ while running:
 				window.blit(TextSurf, TextRect)
 
 	# Text Update
+	pygame.draw.rect(window, black, (w_height+padding*1.5-5, 300-5, title_panel_side+10,title_panel_side+10))
 	pygame.draw.rect(window, white, (w_height+padding*1.5, 300, title_panel_side,title_panel_side))
 	Score_v.words = str(int(score))
 	for item in constant_text_displayed:
@@ -263,8 +258,7 @@ while running:
 		window.blit(TextSurf, TextRect)
 
 	if game_over:
-		print('TRIGGEED')
-		pygame.draw.rect(window, black, (w_height+padding*1.5, 450, title_panel_side,title_panel_side))
+		print('TRIGERED')
 		TextSurf, TextRect = Game_over_t.genTextObject()
 		TextRect.center = Game_over_t.co_ord
 		window.blit(TextSurf,TextRect)
@@ -272,15 +266,20 @@ while running:
 		#Give user option to restart
 		inactive = True
 		while inactive:
-		
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					running = False
+					inactive = False
 				if event.type == pygame.KEYDOWN:
 					key = pygame.key.get_pressed()
 					if key[pygame.K_SPACE]:
 						print('RESET')
-						exit()
+						grid, running, game_over, score = newGridGen(window)
+						inactive=False
+						#Main Grid
+						pygame.draw.rect(window, black, (padding, padding, total_grid_side, total_grid_side))
+						#Title box
+						pygame.draw.rect(window, black, (w_height+padding*1.5, padding,title_panel_side,title_panel_side))
 	pygame.display.update()
 pygame.quit()
 print('end')
