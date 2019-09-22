@@ -1,3 +1,9 @@
+"""
+Description: A script to simulate the 2048 game.
+Language: Python
+Version: 1.0
+"""
+
 import numpy as np
 import pygame
 import random
@@ -203,8 +209,10 @@ Score_t = DisplayText('Score:', pygame.font.Font('freesansbold.ttf', 30), (w_hei
 Score_v = DisplayText(str(score),pygame.font.Font('freesansbold.ttf', 50), (w_height + padding * 1.5 + title_panel_side / 2 , (padding + (title_panel_side / 2)) *3+ 100), black)
 Game_over_t = DisplayText('Game Over !', pygame.font.Font('freesansbold.ttf', 50), (w_width / 2 , w_height/2), red)
 Cell_formats = DisplayText(None, pygame.font.Font('freesansbold.ttf', 40), None, black)
+instructions_1 = DisplayText('Press SPACE to reset.', pygame.font.Font('freesansbold.ttf', 18), (w_width-100, w_height-70), black)
+instructions_2 = DisplayText('Use arrow keys to move.', pygame.font.Font('freesansbold.ttf', 18), (w_width-103, w_height-50), black)
 
-constant_text_displayed = [Title, Score_t, Score_v]
+constant_text_displayed = [Title, Score_t, Score_v, instructions_1, instructions_2]
 
 #Game parameters
 window = pygame.display.set_mode((w_width, w_height))
